@@ -1,0 +1,91 @@
+/*
+ * Copyright 2023 Fonticons, Inc.
+ * Copyright 2023 Pedro Debs
+ * Font Awesome Free 6.4.0 by @fontawesome - https://fontawesome.com
+ * License - https://fontawesome.com/license/free (Fonts: SIL OFL 1.1, Code: MIT License)
+ */
+@font-face {
+	font-family: 'fa';
+	font-style: normal;
+	font-weight: normal;
+	font-display: block;
+	src: url("fa.woff2") format("woff2"), url("fa.ttf") format("truetype");
+}
+
+html {
+	-moz-text-size-adjust: none;
+	-webkit-text-size-adjust: none;
+	text-size-adjust: none;
+
+	font:100%/1.5 sans-serif;
+	overflow-y: scroll;
+}
+
+
+h1, h2 {
+	line-height: 1.1
+}
+
+ul {
+	list-style-type: none;
+	margin: 0;
+	padding: 0;
+}
+
+li {
+	margin: 8px;
+}
+
+footer, .center {
+	text-align: center;
+}
+
+@media screen {
+	body {
+		margin: auto;
+		max-width: 45em;
+		padding: 0 1em;
+
+		display: grid;
+		grid-template-rows: auto 1fr auto;
+		min-height: 100vh;
+		min-height: 100svh;
+	}
+
+	footer {
+		margin-top: auto;
+		padding-bottom: 1.5em;
+	}
+}
+
+@supports not (color-scheme: dark light) {
+	@media (prefers-color-scheme: dark) {
+		html {
+			background-color:#191919;
+			color:#e6e6e6
+		}
+		a:link{color:#eee8a7}
+		a:visited{color:#ffd8ff}
+	}
+}
+
+.fa:before {
+	font-family: 'fa';
+	margin-right: .4em;
+}
+
+.github:before {
+	content: "\f09b";
+}
+
+.linkedin:before {
+	content: "\f08c";
+}
+
+.email:before {
+	content: "\f0e0";
+}
+
+.key:before {
+	content: "\f084";
+}
