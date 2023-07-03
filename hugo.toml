@@ -1,0 +1,10 @@
+enableRobotsTXT = true
+disableKinds = ["taxonomy", "term", "RSS", "sitemap"]
+disableHugoGeneratorInject = true
+
+[markup.goldmark.renderer]
+xhtml = true
+unsafe = true
+
+[outputs]
+home = ["html"]

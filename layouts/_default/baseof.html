@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="color-scheme" content="dark light"/>
+<meta name="viewport" content="width=device-width,initial-scale=1,shrink-to-fit=no"/>
+{{- if not (eq .Kind "404")}}
+<link rel="canonical" href="{{.Permalink}}"/>
+{{- end}}
+{{- if isset .Params "description" }}
+<meta name="description" content="{{.Description}}"/>
+{{- end}}
+<meta name="author" content="Pedro Debs"/>
+<link rel="icon" type="image/svg+xml" href="/favicon.svg"/>
+<link rel="icon" type="image/x-icon" href="/favicon.ico"/>
+<link rel="stylesheet" href="/style.css">
+<title>{{block "title" .}}{{.Title}}{{end}}</title>
+</head>
+<body>
+<main>
+{{- block "main" .}}{{end -}}
+</main>
+<footer>
+<hr/>
+<p xmlns:cc="http://creativecommons.org/ns#" >This work is marked with <a href="https://creativecommons.org/publicdomain/zero/1.0/" rel="license">CC0 1.0</a></p> 
+</footer>
+</body>
+</html>

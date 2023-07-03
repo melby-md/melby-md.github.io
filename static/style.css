@@ -1,0 +1,38 @@
+html {
+	-moz-text-size-adjust: none;
+	-webkit-text-size-adjust: none;
+	text-size-adjust: none;
+	font: 100%/1.5 sans-serif;
+	overflow-y: scroll;
+}
+
+h1, h2, h3 {
+	line-height: 1.1
+}
+
+.center {
+	text-align: center;
+}
+
+footer {
+	font-size: smaller;
+}
+
+@media screen {
+    body {
+        margin: auto;
+        max-width: 47em;
+        padding: 0 1em;
+    }
+
+    @media (prefers-color-scheme: dark) {
+        @supports not (color-scheme: dark light) {
+            html {
+                background-color:#191919;
+                color:#e6e6e6;
+            }
+            a:link{color:#eee8a7;}
+            a:visited{color:#ffd8ff;}
+        }
+    }
+}
