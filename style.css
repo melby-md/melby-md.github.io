@@ -1,5 +1,4 @@
-/*
- * Copyright 2023 Fonticons, Inc.
+/* Copyright 2023 Fonticons, Inc.
  * Copyright 2023 Pedro Debs
  * Font Awesome Free 6.4.0 by @fontawesome - https://fontawesome.com
  * License - https://fontawesome.com/license/free (Fonts: SIL OFL 1.1, Code: MIT License)
@@ -7,7 +6,7 @@
 @font-face {
 	font-family: 'fa';
 	font-style: normal;
-	font-weight: normal;
+	font-weight: 400;
 	font-display: block;
 	src: url("fa.woff2") format("woff2"), url("fa.ttf") format("truetype");
 }
@@ -22,17 +21,17 @@ html {
 }
 
 
-h1, h2 {
+h1, h2, h3 {
 	line-height: 1.1
 }
 
-ul {
+.links {
 	list-style-type: none;
 	margin: 0;
 	padding: 0;
 }
 
-li {
+.links li {
 	margin: 8px;
 }
 
@@ -40,7 +39,15 @@ footer, .center {
 	text-align: center;
 }
 
+footer {
+	font-size: smaller;
+}
+
 @media screen {
+	html {
+		height: -webkit-fill-available;
+	}
+
 	body {
 		margin: auto;
 		max-width: 45em;
@@ -49,6 +56,7 @@ footer, .center {
 		display: grid;
 		grid-template-rows: auto 1fr auto;
 		min-height: 100vh;
+		min-height: -webkit-fill-available;
 		min-height: 100svh;
 	}
 
