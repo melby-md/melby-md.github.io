@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="color-scheme" content="dark light"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+{{- if not (eq .Kind "404")}}
+<link rel="canonical" href="{{.Permalink}}"/>
+<meta name="author" content="Pedro Debs"/>
+{{- if isset .Params "description" }}
+<meta name="description" content="{{.Description}}"/>
+{{- end}}{{end}}
+<link rel="stylesheet" href="/style.css"/>
+<title>{{block "title" .}}{{.Title}}{{end}}</title>
+</head>
+<body>
+<header>
+<nav>
+<ul class="nav links">
+<li class="fa house"><a href="/">
+{{- if eq .Kind "home" -}}
+<strong>~debs</strong>
+{{- else -}}
+~debs
+{{- end -}}
+</a></li>
+</ul>
+</nav>
+<hr/>
+</header>
+<main>
+{{- block "main" .}}{{end -}}
+</main>
+<footer>
+<p xmlns:cc="http://creativecommons.org/ns#">Copyright &copy; <time datetime="2023">2023</time>
+<span property="cc:attributionName">Pedro Debs</span><br/>
+Except otherwise noted, all content on this website is licensed under
+<a href="http://creativecommons.org/licenses/by-sa/4.0/" rel="license">CC BY-SA 4.0</a>.</p>
+</footer>
+</body>
+</html>
