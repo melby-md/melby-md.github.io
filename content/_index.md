@@ -3,7 +3,7 @@ title: "Pedro Debs"
 description: "Pedro Debs's personal website"
 ---
 
-Programmer and undergraduate computer science student based in Brasil,
+Programmer and undergraduate computer science student based in Brazil,
 also known as "melby" or "melby md" on some sites.
 
 ## Elsewhere on the web:
