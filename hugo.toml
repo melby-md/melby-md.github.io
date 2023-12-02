@@ -1,11 +1,29 @@
 enableRobotsTXT = true
-disableKinds = ["page", "section", "taxonomy", "term", "RSS"]
+disableKinds = ["taxonomy", "term", "RSS"]
 disableHugoGeneratorInject = true
+
+[permalinks.page]
+blog = "/blog/:year/:month/:day/:filename"
 
 [markup.goldmark.renderer]
 xhtml = true
 unsafe = true
 
+[markup.goldmark.extensions.typographer]
+disable = true
+
+[mediaTypes."application/atom+xml"]
+suffixes = ["xml"]
+
+[outputFormats.atom]
+basename = "atom"
+isPlainText = true
+mediaType = "application/xml"
+path = "../"
+
 [outputs]
 home = ['html']
+section = ['html', 'atom']
 
+[markup.highlight]
+codeFences = false

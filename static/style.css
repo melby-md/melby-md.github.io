@@ -8,7 +8,7 @@
 	font-style: normal;
 	font-weight: 400;
 	font-display: block;
-	src: url("fa.woff2") format("woff2"), url("fa.ttf") format("truetype");
+	src: url("/fa.woff2") format("woff2"), url("/fa.ttf") format("truetype");
 }
 
 html {
@@ -41,6 +41,17 @@ footer, .center {
 
 footer {
 	font-size: smaller;
+}
+
+code {
+	font-family: monospace, monospace;
+}
+
+pre {
+	padding: .5em;
+	border-radius: .4em;
+	overflow: auto;
+	border: 1px solid;
 }
 
 @media screen {
@@ -95,3 +106,5 @@ footer {
 .email:before{content:"\f0e0";}
 .key:before{content:"\f084";}
 .house:before{content:"\f015";}
+.bars:before{content:"\f0c9";}
+.feed::before{content:"\f09e";}

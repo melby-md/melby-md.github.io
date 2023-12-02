@@ -24,7 +24,14 @@
 ~debs
 {{- end -}}
 </a></li>
-</ul>
+<li class="fa bars"><a href="/blog">
+{{- if eq .Section "blog" -}}
+<strong>blog</strong>
+{{- else -}}
+blog
+{{- end -}}
+</a></li>
+<li class="fa feed"><a href="/atom.xml">feed</a></li></ul>
 </nav>
 <hr/>
 </header>
@@ -35,7 +42,8 @@
 <p xmlns:cc="http://creativecommons.org/ns#">Copyright &copy; <time datetime="2023">2023</time>
 <span property="cc:attributionName">Pedro Debs</span><br/>
 Except otherwise noted, all content on this website is licensed under
-<a href="http://creativecommons.org/licenses/by-sa/4.0/" rel="license">CC BY-SA 4.0</a>.</p>
+<a href="http://creativecommons.org/licenses/by-sa/4.0/" rel="license">CC BY-SA 4.0</a>,
+and all code is licensed under the <a href="https://opensource.org/license/0bsd/" rel="license">0BSD License</a>.</p>
 </footer>
 </body>
 </html>
