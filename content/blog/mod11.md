@@ -47,7 +47,7 @@ x x  x  x  x  x  x x x
 This algorithm implemented in C (assuming you're feeding the function with
 strings with the right length and only containing digits):
 
-``` c
+```
 int
 mod11(const char *s)
 {
@@ -162,7 +162,7 @@ r = _mm_or_si128(
 Ta-dah, a register with the result of the multiplication of each byte. Now we need to sum it
 all into one integer. First use `_mm_sad_epu8` which subtracts 8 bit
 numbers, then add each consecutive 8 numbers into a 16 bit number,
-I used a zeored register beacuse I am only interested in the addition in the
+I used a zeroed register beacuse I am only interested in the addition in the
 end (weirdly enough).
 
 ```
