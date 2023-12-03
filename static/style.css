@@ -48,10 +48,13 @@ code {
 }
 
 pre {
+	overflow: auto;
 	padding: .5em;
 	border-radius: .4em;
-	overflow: auto;
 	border: 1px solid;
+	width: 0;
+	min-width: 100%;
+	box-sizing: border-box;
 }
 
 @media screen {

@@ -33,17 +33,19 @@ x x x  x  x  x  x  x x
 1 2 3  4  5  6  7  8 9
 ----------------------
 2+8+18+32+25+30+49+8+0 = 127
+</pre>
 
 172 mod 11 = 7 (first checksum checks out)
 
+<pre style="font-family:monospace,monospace;border:none;">
 4 6  8  5  5  7  1 0 7
 x x  x  x  x  x  x x x
 1 2  3  4  5  6  7 8 9
 -----------------------
 4+12+24+20+25+42+7+0+63 = 197
+</pre>
 
 197 mod 11 = 10 (second checksum checks out because 10 becomes 0)
-</pre>
 
 This algorithm implemented in C:
 
