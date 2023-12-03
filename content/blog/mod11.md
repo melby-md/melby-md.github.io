@@ -27,7 +27,7 @@ second one. Each check goes like this:
 
 Example: 24685571070 (randomly generated)
 
-<pre style="font-family:monospace,monospace;border:none;">
+<pre style="font-family:monospace,monospace;border:none;padding:0;">
 2 4 6  8  5  5  7  1 0
 x x x  x  x  x  x  x x
 1 2 3  4  5  6  7  8 9
@@ -37,7 +37,7 @@ x x x  x  x  x  x  x x
 
 172 mod 11 = 7 (first checksum checks out)
 
-<pre style="font-family:monospace,monospace;border:none;">
+<pre style="font-family:monospace,monospace;border:none;padding:0;">
 4 6  8  5  5  7  1 0 7
 x x  x  x  x  x  x x x
 1 2  3  4  5  6  7 8 9

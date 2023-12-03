@@ -5,6 +5,7 @@
 <link href="{{.Site.BaseURL}}atom.xml" rel="self"/>
 <link href="{{.Site.BaseURL}}"/>
 <id>{{.Site.BaseURL}}</id>
+<icon>/favicon.ico</icon>
 <updated>{{ site.LastChange.UTC.Format "2006-01-02T15:04:05-07:00" | safeHTML }}</updated>
 {{- range first 5 .Pages}}
 <entry>

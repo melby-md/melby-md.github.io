@@ -52,9 +52,6 @@ pre {
 	padding: .5em;
 	border-radius: .4em;
 	border: 1px solid;
-	width: 0;
-	min-width: 100%;
-	box-sizing: border-box;
 }
 
 @media screen {
@@ -69,6 +66,7 @@ pre {
 
 		display: grid;
 		grid-template-rows: auto 1fr auto;
+		grid-template-columns: 100%;
 		min-height: 100vh;
 		min-height: -webkit-fill-available;
 		min-height: 100svh;
