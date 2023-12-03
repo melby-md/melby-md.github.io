@@ -5,14 +5,12 @@
 <link href="{{.Site.BaseURL}}atom.xml" rel="self"/>
 <link href="{{.Site.BaseURL}}"/>
 <id>{{.Site.BaseURL}}</id>
-<icon>/favicon.ico</icon>
 <updated>{{ site.LastChange.UTC.Format "2006-01-02T15:04:05-07:00" | safeHTML }}</updated>
 {{- range first 5 .Pages}}
 <entry>
 <title>{{.Title}}</title>
 <link rel="alternate" type="text/html" href="{{ .Permalink }}"/>
 <id>{{.Permalink}}</id>
-<published>{{ .Date.UTC.Format "2006-01-02T15:04:05-07:00" | safeHTML }}</published>
 <updated>{{ .Lastmod.UTC.Format "2006-01-02T15:04:05-07:00" | safeHTML }}</updated>
 {{- if isset .Params "description" }}
 <summary>{{.Description}}</summary>

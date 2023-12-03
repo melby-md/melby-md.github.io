@@ -5,29 +5,26 @@ date: 2023-12-03
 
 I've recently read [a great article about optimizing Luhn algorithm with SWAR and SIMD](https://nullprogram.com/blog/2022/04/30/),
 and I am a big fan of unecessary optimization, so I tried to optimize the mod 11
-checksum algorithm.
-
-This algorithm is most known for beign used in the [ISBN-10 checksum](https://en.wikipedia.org/wiki/ISBN#ISBN-10_check_digits),
+checksum algorithm. This algorithm is most known for beign used in the [ISBN-10 checksum](https://en.wikipedia.org/wiki/ISBN#ISBN-10_check_digits),
 but I am mostly interested in Brazil's (my home country) individual taxpayer
-registration number, the CPF, it's equivalent to the social security number in
-the US, it serves to identify every resident in Brazil.
+registration number, the [CPF](https://en.wikipedia.org/wiki/CPF_number), it's
+equivalent to the social security number in the US, it serves to identify every
+resident in Brazil.
 
 The CPF is formed by 11 digits, 9 significant digits and 2 checksum digits at
 the end, it's often written with punctuation like: "000.000.000-00", but in
 this article I will ignore the punctuation. The checksum used in it is slightly
-different from the one used in the ISBN-10 (but the code presented here can be easily
-adapted) and it must be performed 2 times, one for each checksum digit, the
-first checking the first nine digits agains the first checksum digit, and the
+different from the one used in the ISBN-10 (but the code presented here can be
+easily adapted) and it must be performed 2 times, one for each checksum digit,
+the first checking the first nine digits agains the first checksum digit, and the
 second checking the 2nd to 9th digit and the first checksum digit against the
 second one. Each check goes like this:
 
  1. The 1st digit is multiplied by 1, the 2nd by 2... So it goes until de 9th is multiplied by 9.
  2. The result of the multiplications are added and divided by 11, the checksum will be the rest of the division.
- 3. If the rest is 10 we consider it as 0, then we check if it's the same as the checksum digit.
+ 3. If the rest is 10 consider it as 0, then check if it's the same as the checksum digit.
 
-Example: 24685571070 (randomly generated)
-
-<pre style="font-family:monospace,monospace;border:none;padding:0;">
+<pre style="border:none;padding:0">
 2 4 6  8  5  5  7  1 0
 x x x  x  x  x  x  x x
 1 2 3  4  5  6  7  8 9
@@ -37,7 +34,7 @@ x x x  x  x  x  x  x x
 
 172 mod 11 = 7 (first checksum checks out)
 
-<pre style="font-family:monospace,monospace;border:none;padding:0;">
+<pre style="border:none;padding:0">
 4 6  8  5  5  7  1 0 7
 x x  x  x  x  x  x x x
 1 2  3  4  5  6  7 8 9
@@ -47,9 +44,10 @@ x x  x  x  x  x  x x x
 
 197 mod 11 = 10 (second checksum checks out because 10 becomes 0)
 
-This algorithm implemented in C:
+This algorithm implemented in C (assuming you're feeding the function with
+strings with the right length and only containing digits):
 
-```
+``` c
 int
 mod11(const char *s)
 {
@@ -70,9 +68,9 @@ check_cpf(const char *s)
 }
 ```
 
-But what if, hypothetically speaking, this implementation is too slow? We can do
-better rewritting the mod11 function with SSE2 SIMD instructions, which
-parallelizes the algorithm, thus, making it more efficient:
+But what if, hypothetically speaking, this implementation is too slow for your
+high performance software&trade;? We can do better by rewritting the mod11
+function with SSE2 SIMD instructions:
 
 ```
 #include <emmintrin.h>
@@ -111,13 +109,87 @@ mod11(const char *s)
 }
 ```
 
-In the code above, the multiplication part is kinda tricky because there is no
-simple way to multiply 8 bit integers with SIMD, so we have to use a trick that
-cost us some precious instructions, But, if we dont constrain ourselves to SSE2
-we can simplify the multiplication with the SSSE3 instruction `_mm_addubs_epi16`
-wich multiplies unsigned 8 bit numbers and add them in pairs resulting in 8
-signed 16 bit numbers, the result, in this case, will never surpass the 8 bits,
-so we can perform a horizontal sum as if they where 8 bit numbers like before:
+Lets go line by line. First load the array into a integer register:
+
+```
+__m128i r = _mm_loadu_si128((void *)s);
+```
+
+This will load memory out of bounds, but it will deal with it later. Then,
+convert the ASCII digits into its decimal values by XORing every byte with 0x30:
+
+```
+r = _mm_xor_si128(r, _mm_set1_epi8(0x30));
+```
+
+Then comes the tricky part, there is no strightfoward way to multiply 8 bit
+integers with x86 SIMD, so I use a trick, first save the values for
+the multiplication in `m`:
+
+```
+__m128i m = _mm_set_epi32(0, 0x00000009, 0x08070605, 0x04030201);
+```
+
+Its reversed because x86 is little endian. The 0x00 bytes will multiply the
+bytes loaded from out of bounds, zeroing them. Then comes the first multiplication:
+
+```
+__m128i even = _mm_mullo_epi16(r, m);
+```
+
+By multiplying the adjacent bytes in pairs as 16 bit numbers, the lower halves
+of the results will contain the multiplication of the lower bytes of the pairs,
+store it in `even`. Then shift each 16 bit number 8 bits right to
+multiply the higher bytes and sore it in `odd`:
+
+```
+__m128i odd = _mm_mullo_epi16(
+    _mm_srli_epi16(r, 8),
+    _mm_srli_epi16(m, 8)
+);
+```
+
+`even` is shifted left than right by 8 bits to zero the high byte, and `odd` is
+shifted into place by 8 bits left. Then OR them together:
+
+```
+r = _mm_or_si128(
+    _mm_slli_epi16(odd, 8),
+    _mm_srli_epi16(_mm_slli_epi16(even, 8), 8)
+);
+```
+
+Ta-dah, a register with the result of the multiplication of each byte. Now we need to sum it
+all into one integer. First use `_mm_sad_epu8` which subtracts 8 bit
+numbers, then add each consecutive 8 numbers into a 16 bit number,
+I used a zeored register beacuse I am only interested in the addition in the
+end (weirdly enough).
+
+```
+r = _mm_sad_epu8(r, _mm_setzero_si128());
+```
+
+To add the 2 16 bit numbers, shuffle the register and add it to
+itself:
+
+```
+r = _mm_add_epi32(r, _mm_shuffle_epi32(r, 2));
+```
+
+To convert to `int`:
+
+```
+int final = _mm_cvtsi128_si32(r);
+```
+
+The rest is the same as the iterative version.
+
+As you can see, the multiplication is indeed tricky, but, if we dont constrain
+ourselves to SSE2 we can simplify the multiplication with the SSSE3 instruction
+`_mm_addubs_epi16` wich multiplies unsigned 8 bit numbers and add them in pairs
+resulting in 8 signed 16 bit numbers, the result, in this case, will never
+surpass the 8 bits, so perform a horizontal sum as if they where 8 bit
+numbers like before:
 
 ```
 #include <tmmintrin.h>
@@ -151,9 +223,6 @@ A little bit neater.
 
 ## Benchmark
 
-Remembering that all implementations here assume you are passing valid digits
-only.
-
 All the code was compiled with gcc 13.2.1 on linux with the `-O3` flag and ran
 on my notebook with an AMD Ryzen 5 5500U @ 4.0GHz.
 
@@ -164,7 +233,8 @@ on my notebook with an AMD Ryzen 5 5500U @ 4.0GHz.
 In the end the SSSE3 version got a 100% speed improvement over the iterative
 version.
 
-If you know how to further optimize the code shown, let me know!
+If you know how to further optimize the code shown or use a different aproach
+(SWAR, other architeture, etc) let me know!
 
 ## Full source code
 
