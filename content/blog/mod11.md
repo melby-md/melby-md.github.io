@@ -123,7 +123,7 @@ r = _mm_xor_si128(r, _mm_set1_epi8(0x30));
 ```
 
 Then comes the tricky part, there is no strightfoward way to multiply 8 bit
-integers with x86 SIMD, so I use a trick, first save the values for
+integers with x86 SIMD, so I used a trick, first save the values for
 the multiplication in `m`:
 
 ```
@@ -184,7 +184,7 @@ int final = _mm_cvtsi128_si32(r);
 
 The rest is the same as the iterative version.
 
-As you can see, the multiplication is indeed tricky, but, if we dont constrain
+As you can see, the multiplication is indeed tricky, but, if we don't constrain
 ourselves to SSE2 we can simplify the multiplication with the SSSE3 instruction
 `_mm_addubs_epi16` wich multiplies unsigned 8 bit numbers and add them in pairs
 resulting in 8 signed 16 bit numbers, the result, in this case, will never
@@ -226,11 +226,11 @@ A little bit neater.
 All the code was compiled with gcc 13.2.1 on linux with the `-O3` flag and ran
 on my notebook with an AMD Ryzen 5 5500U @ 4.0GHz.
 
- - Iterative: ~118 checksums per second
- - SSE2: ~218 checksums per second
- - SSSE3: ~237 checksums per second.
+ - Iterative: ~118 million checksums per second
+ - SSE2: ~218 million checksums per second
+ - SSSE3: ~237 million checksums per second.
 
-In the end the SSSE3 version got a 100% speed improvement over the iterative
+In the end, the SSSE3 version got a 100% speed improvement over the iterative
 version.
 
 If you know how to further optimize the code shown or use a different aproach
@@ -297,9 +297,21 @@ check_cpf(const char *s)
 
 #ifdef BENCH
 #include <stdio.h>
-#include <time.h>
 #include <stdint.h>
 
+#ifdef _WIN32
+#include <windows.h>
+static double
+now(void)
+{
+    LARGE_INTEGER f, t;
+    QueryPerformanceFrequency(&f);
+    QueryPerformanceCounter(&t);
+    return (double)t.QuadPart / f.QuadPart;
+}
+
+#else
+#include <time.h>
 static double
 now(void)
 {
@@ -307,6 +319,7 @@ now(void)
     clock_gettime(CLOCK_MONOTONIC, &ts);
     return ts.tv_sec + ts.tv_nsec/1e9;
 }
+#endif
 
 int
 main(void)
