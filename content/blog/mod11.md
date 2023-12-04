@@ -24,7 +24,7 @@ second one. Each check goes like this:
  2. The result of the multiplications are added and divided by 11, the checksum will be the rest of the division.
  3. If the rest is 10 consider it as 0, then check if it's the same as the checksum digit.
 
-<pre style="border:none;padding:0">
+<pre class="noborder">
 2 4 6  8  5  5  7  1 0
 x x x  x  x  x  x  x x
 1 2 3  4  5  6  7  8 9
@@ -34,7 +34,7 @@ x x x  x  x  x  x  x x
 
 172 mod 11 = 7 (first checksum checks out)
 
-<pre style="border:none;padding:0">
+<pre class="noborder">
 4 6  8  5  5  7  1 0 7
 x x  x  x  x  x  x x x
 1 2  3  4  5  6  7 8 9
@@ -78,7 +78,7 @@ function with SSE2 SIMD instructions:
 int
 mod11(const char *s)
 {
-    // load the string into a register
+    // load the string into a vector
     __m128i r = _mm_loadu_si128((void *)s);
 
     // convert ascii to decimal
@@ -109,7 +109,7 @@ mod11(const char *s)
 }
 ```
 
-Lets go line by line. First load the array into a integer register:
+Lets go line by line. First load the array into a integer vector:
 
 ```
 __m128i r = _mm_loadu_si128((void *)s);
@@ -159,17 +159,17 @@ r = _mm_or_si128(
 );
 ```
 
-Ta-dah, a register with the result of the multiplication of each byte. Now we need to sum it
+Ta-dah, a vector with the result of the multiplication of each byte. Now we need to sum it
 all into one integer. First use `_mm_sad_epu8` which subtracts 8 bit
 numbers, then add each consecutive 8 numbers into a 16 bit number,
-I used a zeroed register beacuse I am only interested in the addition in the
+I used a zeroed vector beacuse I am only interested in the addition in the
 end (weirdly enough).
 
 ```
 r = _mm_sad_epu8(r, _mm_setzero_si128());
 ```
 
-To add the 2 16 bit numbers, shuffle the register and add it to
+To add the 2 16 bit numbers, shuffle the vector and add it to
 itself:
 
 ```
@@ -197,7 +197,7 @@ numbers like before:
 int
 mod11(const char *s)
 {
-    // load the string into a register
+    // load the string into a vector
     __m128i r = _mm_loadu_si128((void *)s);
 
     // convert ascii to decimal

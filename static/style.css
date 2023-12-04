@@ -54,6 +54,11 @@ pre {
 	border: 1px solid;
 }
 
+.noborder {
+	padding: 0;
+	border: none;
+}
+
 @media screen {
 	html {
 		height: -webkit-fill-available;
