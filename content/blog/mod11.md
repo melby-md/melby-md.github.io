@@ -190,7 +190,7 @@ The rest is the same as the iterative version.
 
 As you can see, the multiplication is indeed tricky, but, if we don't constrain
 ourselves to SSE2 we can simplify the multiplication with the SSSE3 instruction
-`_mm_addubs_epi16` which does exatly the same as the instructions used before,
+`_mm_addubs_epi16` which does exactly the same as the instructions used before,
 so the sum part stays the same:
 
 ```
