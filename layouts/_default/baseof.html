@@ -6,13 +6,12 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,shrink-to-fit=no"/>
 {{- if not (eq .Kind "404")}}
 <link rel="canonical" href="{{.Permalink}}"/>
-<link rel="alternate" type="application/atom+xml" href="/atom.xml">
+<link rel="alternate" type="application/atom+xml" href="/atom.xml"/>
 <meta name="author" content="Pedro Debs"/>
 {{- if isset .Params "description" }}
 <meta name="description" content="{{.Description}}"/>
 {{- end}}{{end}}
-<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
-<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+<link rel="icon" type="image/svg+xml" href="/favicon.svg"/>
 <link rel="stylesheet" href="/style.css"/>
 <title>{{block "title" .}}{{.Title}}{{end}}</title>
 </head>
