@@ -94,8 +94,8 @@ mod11(const char *s)
         _mm_srli_epi16(m, 8)
     );
 
-    r = _mm_or_si128(
-        _mm_slli_epi16(odd, 8),
+    r = _mm_add_epi8(
+        odd,
         _mm_srli_epi16(_mm_slli_epi16(even, 8), 8)
     );
 
@@ -151,27 +151,29 @@ __m128i odd = _mm_mullo_epi16(
 );
 ```
 
-`even` is shifted left than right by 8 bits to zero the high byte, and `odd` is
-shifted into place by 8 bits left. Then OR them together:
+`even` is shifted left than right by 8 bits to zero the high byte, then added
+with `odd`:
 
 ```
-r = _mm_or_si128(
-    _mm_slli_epi16(odd, 8),
+r = _mm_add_epi8(
+    odd,
     _mm_srli_epi16(_mm_slli_epi16(even, 8), 8)
 );
 ```
 
-Ta-dah, a vector with the result of the multiplication of each byte. Now we need to sum it
-all into one integer. First use `_mm_sad_epu8` which subtracts 8 bit
-numbers, then add each consecutive 8 numbers into a 16 bit number,
-I used a zeroed vector beacuse I am only interested in the addition in the
-end (weirdly enough).
+Ta-dah, a vector with the sum of every 2 consecutive results of the
+multiplication of each byte. Now we need to sum it all into one integer. In this
+case, the result of the addition will never surpass 8 bits, so the high byte
+will be 0, so the function can perform a horizontal sum as 8 bit numbers, which
+is faster than a 16 bit sum. So, first use `_mm_sad_epu8` which subtracts 8 bit
+numbers, then add each consecutive 8 numbers into a 16 bit number, I used a
+zeroed vector beacuse I am only interested in the addition in the end (weirdly enough).
 
 ```
 r = _mm_sad_epu8(r, _mm_setzero_si128());
 ```
 
-To add the 2 16 bit numbers, shuffle the vector and add it to
+To add the 2 numbers, shuffle the vector and add it to
 itself:
 
 ```
@@ -188,10 +190,8 @@ The rest is the same as the iterative version.
 
 As you can see, the multiplication is indeed tricky, but, if we don't constrain
 ourselves to SSE2 we can simplify the multiplication with the SSSE3 instruction
-`_mm_addubs_epi16` wich multiplies unsigned 8 bit numbers and add them in pairs
-resulting in 8 signed 16 bit numbers, the result, in this case, will never
-surpass the 8 bits, so perform a horizontal sum as if they where 8 bit
-numbers like before:
+`_mm_addubs_epi16` which does exatly the same as the instructions used before,
+so the sum part stays the same:
 
 ```
 #include <tmmintrin.h>
@@ -229,7 +229,7 @@ All the code was compiled with gcc 13.2.1 on linux with the `-O3` flag and ran
 on my notebook with an AMD Ryzen 5 5500U @ 4.0GHz.
 
  - Iterative: ~118 million checksums per second
- - SSE2: ~218 million checksums per second
+ - SSE2: ~226 million checksums per second
  - SSSE3: ~237 million checksums per second.
 
 In the end, the SSSE3 version got a 100% speed improvement over the iterative
@@ -266,12 +266,12 @@ mod11(const char *s)
 
     __m128i even = _mm_mullo_epi16(r, m);
     __m128i odd = _mm_mullo_epi16(
-    _mm_srli_epi16(r, 8),
+        _mm_srli_epi16(r, 8),
         _mm_srli_epi16(m, 8)
     );
 
-    r = _mm_or_si128(
-        _mm_slli_epi16(odd, 8),
+    r = _mm_add_epi8(
+        odd,
         _mm_srli_epi16(_mm_slli_epi16(even, 8), 8)
     );
 #endif
