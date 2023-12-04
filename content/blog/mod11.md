@@ -24,6 +24,8 @@ second one. Each check goes like this:
  2. The result of the multiplications are added and divided by 11, the checksum will be the rest of the division.
  3. If the rest is 10 consider it as 0, then check if it's the same as the checksum digit.
 
+Example: 24685571070 (randomly generated)
+
 <pre class="noborder">
 2 4 6  8  5  5  7  1 0
 x x x  x  x  x  x  x x
