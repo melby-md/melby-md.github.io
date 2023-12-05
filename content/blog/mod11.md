@@ -146,7 +146,7 @@ I will illustrate:
   2a 1a+2b 1b
 </pre>
 
-That's why the numbers are switched in `m`. after the multiplication comes a
+That's why the numbers are switched in `m`. after the multiplication, comes a
 shift right to eliminate the low byte:
 
 ```
@@ -183,7 +183,7 @@ The rest is the same as the iterative version.
 
 If we don't constrain ourselves to SSE2 we can simplify the multiplication with
 the SSSE3 instruction `_mm_addubs_epi16` which does almost the same as the
-instructions used in the multiplicatio before, so just change the order of the
+instructions used in the multiplication before, so just change the order of the
 numbers in `m` and multiply it with `r`:
 
 ```
@@ -228,12 +228,21 @@ A little bit neater I think.
 All the code was compiled with gcc 13.2.1 on linux with the `-O3` flag and ran
 on my notebook with an AMD Ryzen 5 5500U @ 4.0GHz.
 
- - Iterative: ~118 million checksums per second
- - SSE2: ~237 million checksums per second
- - SSSE3: ~239 million checksums per second.
+By using the `-march=native` the compiler can optimize the code even further,
+but that depends on your processor model.
 
-In the end, the SSSE3 is only marginally faster than the SSE2 version and is
-a little bit over 100% faster than the iterative version.
+Results ranked by speed:
+
+ 1. SSE2 with `-march=native`: ~246 million checksums per second
+ 2. SSSE3 with `-march=native`: ~242 million checksums per second.
+ 3. SSSE3: ~239 million checksums per second.
+ 4. SSE2: ~237 million checksums per second
+ 5. Iterative: ~118 million checksums per second
+
+Surprisingly enough, even though the SSSE3 version was faster than the SSE2
+version, with `-march=native` the latter version was faster.
+
+In the end, the vectorized implementations had a 100% or more speed improvement.
 
 If you know how to further optimize the code shown or use a different aproach
 (SWAR, other architeture, etc) let me know!
