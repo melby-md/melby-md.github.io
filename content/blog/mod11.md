@@ -157,7 +157,7 @@ Ta-dah, a vector with the sum of every 2 consecutive results of the
 multiplication of each byte. Now we need to sum it all into one integer. In this
 case, the result of the addition will never surpass 8 bits, so the high byte
 will be 0, so the function can perform a horizontal sum as 8 bit numbers, which
-is faster than a 16 bit sum. So, first use `_mm_sad_epu8` which subtracts 8 bit
+is faster than a 16 bit sum. So, first use `_mm_sad_epu8`, which subtracts 8 bit
 numbers, then add each consecutive 8 numbers into a 16 bit number, I used a
 zeroed vector beacuse I am only interested in the addition in the end (weirdly
 enough).
@@ -181,7 +181,7 @@ int final = _mm_cvtsi128_si32(r);
 
 The rest is the same as the iterative version.
 
-If we don't constrain ourselves to SSE2 we can simplify the multiplication with
+If we don't constrain ourselves to SSE2, we can simplify the multiplication with
 the SSSE3 instruction `_mm_addubs_epi16` which does almost the same as the
 instructions used in the multiplication before, so just change the order of the
 numbers in `m` and multiply it with `r`:
@@ -228,7 +228,7 @@ A little bit neater I think.
 All the code was compiled with gcc 13.2.1 on linux with the `-O3` flag and ran
 on my notebook with an AMD Ryzen 5 5500U @ 4.0GHz.
 
-By using the `-march=native`, the compiler can optimize the code even further,
+By using the `-march=native` flag, the compiler can optimize the code even further,
 but that depends on your processor model.
 
 Results ranked by speed:
