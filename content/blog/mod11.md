@@ -240,7 +240,7 @@ Results ranked by speed:
  5. Iterative: ~118 million checksums per second
 
 Surprisingly enough, even though the SSSE3 version was faster than the SSE2
-version, with `-march=native` the latter version was faster.
+version, with `-march=native`, the latter version was faster.
 
 In the end, the vectorized implementations had a 100% or more speed improvement.
 
