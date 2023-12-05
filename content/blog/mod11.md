@@ -228,7 +228,7 @@ A little bit neater I think.
 All the code was compiled with gcc 13.2.1 on linux with the `-O3` flag and ran
 on my notebook with an AMD Ryzen 5 5500U @ 4.0GHz.
 
-By using the `-march=native` the compiler can optimize the code even further,
+By using the `-march=native`, the compiler can optimize the code even further,
 but that depends on your processor model.
 
 Results ranked by speed:
@@ -240,12 +240,12 @@ Results ranked by speed:
  5. Iterative: ~118 million checksums per second
 
 Surprisingly enough, even though the SSSE3 version was faster than the SSE2
-version, with `-march=native`, the latter version was faster.
+one, with `-march=native`, the latter was faster.
 
 In the end, the vectorized implementations had a 100% or more speed improvement.
 
 If you know how to further optimize the code shown or use a different aproach
-(SWAR, other architeture, etc) let me know!
+(SWAR, other architeture, etc), let me know!
 
 ## Full source code
 
