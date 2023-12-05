@@ -3,7 +3,7 @@ title: "Optimizing mod11 checksum verification with SIMD"
 date: 2023-12-03
 ---
 
-I've recently read [a great article about optimizing Luhn algorithm with SWAR and SIMD](https://nullprogram.com/blog/2022/04/30/),
+I've recently read [a great article about optimizing the Luhn algorithm with SWAR and SIMD](https://nullprogram.com/blog/2022/04/30/),
 and I am a big fan of unecessary optimization, so I tried to optimize the mod 11
 checksum algorithm. This algorithm is most known for beign used in the [ISBN-10 checksum](https://en.wikipedia.org/wiki/ISBN#ISBN-10_check_digits),
 but I am mostly interested in Brazil's (my home country) individual taxpayer
@@ -70,7 +70,7 @@ check_cpf(const char *s)
 }
 ```
 
-But what if, hypothetically speaking, this implementation is too slow for your
+But, what if, hypothetically speaking, this implementation is too slow for your
 high performance software&trade;? We can do better by rewritting the mod11
 function with SSE2 SIMD instructions:
 
@@ -116,22 +116,24 @@ convert the ASCII digits into its decimal values by XORing every byte with 0x30:
 r = _mm_xor_si128(r, _mm_set1_epi8(0x30));
 ```
 
-Then comes the tricky part, there is no strightfoward way to multiply 8 bit
-integers with x86 SIMD, but, because I don't need the result of each
-multiplication in a separate byte, I will use a trick:
+Then comes the tricky part, there is no straightfoward way to multiply 8 bit
+integers with x86 SIMD, but I don't need the result of each multiplication in
+a separate byte because the function will sum it all in the end, so I will use a
+trick:
 
 ```
 __m128i m = _mm_set_epi32(0, 0x00000900, 0x07080506, 0x03040102);
 ```
 
-First, the numbers that will multiply the CPF digits are loaded into `m`,
-the zeored bytes will multiply the bytes loaded out of bounds, zeroing them,
+The numbers that will multiply the CPF digits are loaded into `m`,
+the 0x00 bytes will multiply the bytes loaded out of bounds, zeroing them,
 then comes the multiplication:
 
 ```
 r = _mm_mullo_epi16(r, m);
 ```
-In the end this multiplication will result in each high byte of every 16 bit
+
+In the end, this multiplication will result in each high byte of every 16 bit
 number to contain the sum of every 2 consecutive multiplications, sounds weird?
 I will illustrate:
 
@@ -143,11 +145,11 @@ I will illustrate:
      1a 1b
 + 2a 2b
 -------------
-  2a 1a+2b 1b
+  2a <b>1a+2b</b> 1b
 </pre>
 
 That's why the numbers are switched in `m`. after the multiplication, comes a
-shift right to eliminate the low byte:
+right shift to remove the low byte:
 
 ```
 r = _mm_srli_epi16(r, 8);
@@ -156,7 +158,7 @@ r = _mm_srli_epi16(r, 8);
 Ta-dah, a vector with the sum of every 2 consecutive results of the
 multiplication of each byte. Now we need to sum it all into one integer. In this
 case, the result of the addition will never surpass 8 bits, so the high byte
-will be 0, so the function can perform a horizontal sum as 8 bit numbers, which
+will be 0, the function will perform a horizontal sum as 8 bit numbers, which
 is faster than a 16 bit sum. So, first use `_mm_sad_epu8`, which subtracts 8 bit
 numbers, then add each consecutive 8 numbers into a 16 bit number, I used a
 zeroed vector beacuse I am only interested in the addition in the end (weirdly
