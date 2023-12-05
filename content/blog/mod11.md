@@ -87,17 +87,9 @@ mod11(const char *s)
     r = _mm_xor_si128(r, _mm_set1_epi8(0x30));
 
     // multipy the first 9 numbers by 1, 2, 3...
-    __m128i m = _mm_set_epi32(0, 0x00000009, 0x08070605, 0x04030201);
-    __m128i even = _mm_mullo_epi16(r, m);
-    __m128i odd = _mm_mullo_epi16(
-        _mm_srli_epi16(r, 8),
-        _mm_srli_epi16(m, 8)
-    );
-
-    r = _mm_add_epi8(
-        odd,
-        _mm_srli_epi16(_mm_slli_epi16(even, 8), 8)
-    );
+    __m128i m = _mm_set_epi32(0, 0x00000900, 0x07080506, 0x03040102);
+    r = _mm_mullo_epi16(r, m);
+    r = _mm_srli_epi16(r, 8);
 
     // sum the results into one int
     r = _mm_sad_epu8(r, _mm_setzero_si128());
@@ -125,40 +117,40 @@ r = _mm_xor_si128(r, _mm_set1_epi8(0x30));
 ```
 
 Then comes the tricky part, there is no strightfoward way to multiply 8 bit
-integers with x86 SIMD, so I used a trick, first save the values for
-the multiplication in `m`:
+integers with x86 SIMD, but, because I don't need the result of each
+multiplication in a separate byte, I will use a trick:
 
 ```
-__m128i m = _mm_set_epi32(0, 0x00000009, 0x08070605, 0x04030201);
+__m128i m = _mm_set_epi32(0, 0x00000900, 0x07080506, 0x03040102);
 ```
 
-Its reversed because x86 is little endian. The 0x00 bytes will multiply the
-bytes loaded from out of bounds, zeroing them. Then comes the first multiplication:
+First, the numbers that will multiply the CPF digits are loaded into `m`,
+the zeored bytes will multiply the bytes loaded out of bounds, zeroing them,
+then comes the multiplication:
 
 ```
-__m128i even = _mm_mullo_epi16(r, m);
+r = _mm_mullo_epi16(r, m);
 ```
+In the end this multiplication will result in each high byte of every 16 bit
+number to contain the sum of every 2 consecutive multiplications, sounds weird?
+I will illustrate:
 
-By multiplying the adjacent bytes in pairs as 16 bit numbers, the lower halves
-of the results will contain the multiplication of the lower bytes of the pairs,
-store it in `even`. Then shift each 16 bit number 8 bits right to
-multiply the higher bytes and sore it in `odd`:
+
+<pre class="noborder">
+     a  b
+   x 2  1
+   -------
+     1a 1b
++ 2a 2b
+-------------
+  2a 1a+2b 1b
+</pre>
+
+That's why the numbers are switched in `m`. after the multiplication comes a
+shift right to eliminate the low byte:
 
 ```
-__m128i odd = _mm_mullo_epi16(
-    _mm_srli_epi16(r, 8),
-    _mm_srli_epi16(m, 8)
-);
-```
-
-`even` is shifted left than right by 8 bits to zero the high byte, then added
-with `odd`:
-
-```
-r = _mm_add_epi8(
-    odd,
-    _mm_srli_epi16(_mm_slli_epi16(even, 8), 8)
-);
+r = _mm_srli_epi16(r, 8);
 ```
 
 Ta-dah, a vector with the sum of every 2 consecutive results of the
@@ -167,7 +159,8 @@ case, the result of the addition will never surpass 8 bits, so the high byte
 will be 0, so the function can perform a horizontal sum as 8 bit numbers, which
 is faster than a 16 bit sum. So, first use `_mm_sad_epu8` which subtracts 8 bit
 numbers, then add each consecutive 8 numbers into a 16 bit number, I used a
-zeroed vector beacuse I am only interested in the addition in the end (weirdly enough).
+zeroed vector beacuse I am only interested in the addition in the end (weirdly
+enough).
 
 ```
 r = _mm_sad_epu8(r, _mm_setzero_si128());
@@ -188,10 +181,17 @@ int final = _mm_cvtsi128_si32(r);
 
 The rest is the same as the iterative version.
 
-As you can see, the multiplication is indeed tricky, but, if we don't constrain
-ourselves to SSE2 we can simplify the multiplication with the SSSE3 instruction
-`_mm_addubs_epi16` which does exactly the same as the instructions used before,
-so the sum part stays the same:
+If we don't constrain ourselves to SSE2 we can simplify the multiplication with
+the SSSE3 instruction `_mm_addubs_epi16` which does almost the same as the
+instructions used in the multiplicatio before, so just change the order of the
+numbers in `m` and multiply it with `r`:
+
+```
+__m128i m = _mm_set_epi32(0, 0x00000009, 0x08070605, 0x04030201);
+r = _mm_maddubs_epi16(r, m);
+```
+
+the sum part stays the same:
 
 ```
 #include <tmmintrin.h>
@@ -221,7 +221,7 @@ mod11(const char *s)
 }
 ```
 
-A little bit neater.
+A little bit neater I think.
 
 ## Benchmark
 
@@ -229,11 +229,11 @@ All the code was compiled with gcc 13.2.1 on linux with the `-O3` flag and ran
 on my notebook with an AMD Ryzen 5 5500U @ 4.0GHz.
 
  - Iterative: ~118 million checksums per second
- - SSE2: ~226 million checksums per second
- - SSSE3: ~237 million checksums per second.
+ - SSE2: ~237 million checksums per second
+ - SSSE3: ~239 million checksums per second.
 
-In the end, the SSSE3 version got a 100% speed improvement over the iterative
-version.
+In the end, the SSSE3 is only marginally faster than the SSE2 version and is
+a little bit over 100% faster than the iterative version.
 
 If you know how to further optimize the code shown or use a different aproach
 (SWAR, other architeture, etc) let me know!
@@ -258,22 +258,13 @@ mod11(const char *s)
     __m128i r = _mm_loadu_si128((void *)s);
     r = _mm_xor_si128(r, _mm_set1_epi8(0x30));
 
-    __m128i m = _mm_set_epi32(0, 0x00000009, 0x08070605, 0x04030201);
-
 #ifdef __SSSE3__
+    __m128i m = _mm_set_epi32(0, 0x00000009, 0x08070605, 0x04030201);
     r = _mm_maddubs_epi16(r, m);
 #else
-
-    __m128i even = _mm_mullo_epi16(r, m);
-    __m128i odd = _mm_mullo_epi16(
-        _mm_srli_epi16(r, 8),
-        _mm_srli_epi16(m, 8)
-    );
-
-    r = _mm_add_epi8(
-        odd,
-        _mm_srli_epi16(_mm_slli_epi16(even, 8), 8)
-    );
+    __m128i m = _mm_set_epi32(0, 0x00000900, 0x07080506, 0x03040102);
+    r = _mm_mullo_epi16(r, m);
+    r = _mm_srli_epi16(r, 8);
 #endif
 
     r = _mm_sad_epu8(r, _mm_setzero_si128());
