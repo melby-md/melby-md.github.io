@@ -1,6 +1,7 @@
 ---
 title: "Optimizing mod11 checksum verification with SIMD"
 date: 2023-12-03
+highlight: true
 ---
 
 I've recently read [a great article about optimizing the Luhn algorithm with SWAR and SIMD](https://nullprogram.com/blog/2022/04/30/),
@@ -26,7 +27,7 @@ second one. Each check goes like this:
 
 Example: 24685571070 (randomly generated)
 
-<pre class="noborder">
+<pre>
 2 4 6  8  5  5  7  1 0
 x x x  x  x  x  x  x x
 1 2 3  4  5  6  7  8 9
@@ -36,7 +37,7 @@ x x x  x  x  x  x  x x
 
 172 mod 11 = 7 (first checksum checks out)
 
-<pre class="noborder">
+<pre>
 4 6  8  5  5  7  1 0 7
 x x  x  x  x  x  x x x
 1 2  3  4  5  6  7 8 9
@@ -49,7 +50,7 @@ x x  x  x  x  x  x x x
 This algorithm implemented in C (assuming you're feeding the function with
 strings with the right length and only containing digits):
 
-```
+``` c
 int
 mod11(const char *s)
 {
@@ -74,7 +75,7 @@ But, what if, hypothetically speaking, this implementation is too slow for your
 high performance software&trade;? We can do better by rewritting the mod11
 function with SSE2 SIMD instructions:
 
-```
+``` c
 #include <emmintrin.h>
 
 int
@@ -105,14 +106,14 @@ mod11(const char *s)
 
 Lets go line by line. First load the array into a integer vector:
 
-```
+``` c
 __m128i r = _mm_loadu_si128((void *)s);
 ```
 
 This will load memory out of bounds, but it will deal with it later. Then,
 convert the ASCII digits into its decimal values by XORing every byte with 0x30:
 
-```
+``` c
 r = _mm_xor_si128(r, _mm_set1_epi8(0x30));
 ```
 
@@ -121,7 +122,7 @@ integers with x86 SIMD, but I don't need the result of each multiplication in
 a separate byte because the function will sum it all in the end, so I will use a
 trick:
 
-```
+``` c
 __m128i m = _mm_set_epi32(0, 0x00000900, 0x07080506, 0x03040102);
 ```
 
@@ -129,7 +130,7 @@ The numbers that will multiply the CPF digits are loaded into `m`,
 the 0x00 bytes will multiply the bytes loaded out of bounds, zeroing them,
 then comes the multiplication:
 
-```
+``` c
 r = _mm_mullo_epi16(r, m);
 ```
 
@@ -137,8 +138,7 @@ In the end, this multiplication will result in each high byte of every 16 bit
 number to contain the sum of every 2 consecutive multiplications, sounds weird?
 I will illustrate:
 
-
-<pre class="noborder">
+<pre>
      a  b
    x 2  1
    -------
@@ -151,7 +151,7 @@ I will illustrate:
 That's why the numbers are switched in `m`. after the multiplication, comes a
 right shift to remove the low byte:
 
-```
+``` c
 r = _mm_srli_epi16(r, 8);
 ```
 
@@ -164,20 +164,20 @@ numbers, then add each consecutive 8 numbers into a 16 bit number, I used a
 zeroed vector beacuse I am only interested in the addition in the end (weirdly
 enough).
 
-```
+``` c
 r = _mm_sad_epu8(r, _mm_setzero_si128());
 ```
 
 To add the 2 numbers, shuffle the vector and add it to
 itself:
 
-```
+``` c
 r = _mm_add_epi32(r, _mm_shuffle_epi32(r, 2));
 ```
 
 To convert to `int`:
 
-```
+``` c
 int final = _mm_cvtsi128_si32(r);
 ```
 
@@ -188,14 +188,14 @@ the SSSE3 instruction `_mm_addubs_epi16` which does almost the same as the
 instructions used in the multiplication before, so just change the order of the
 numbers in `m` and multiply it with `r`:
 
-```
+``` c
 __m128i m = _mm_set_epi32(0, 0x00000009, 0x08070605, 0x04030201);
 r = _mm_maddubs_epi16(r, m);
 ```
 
 the sum part stays the same:
 
-```
+``` c
 #include <tmmintrin.h>
 
 int
@@ -253,7 +253,7 @@ If you know how to further optimize the code shown or use a different aproach
 
 all implementations in a `#ifdef` soup.
 
-```
+``` c
 #ifdef __SSSE3__
 #  include <tmmintrin.h>
 #elif defined __SSE2__

@@ -9,9 +9,6 @@ blog = "/blog/:year/:month/:day/:filename"
 xhtml = true
 unsafe = true
 
-[markup.goldmark.extensions.typographer]
-disable = true
-
 [mediaTypes."application/atom+xml"]
 suffixes = ["xml"]
 
@@ -26,4 +23,4 @@ home = ['html']
 section = ['html', 'atom']
 
 [markup.highlight]
-codeFences = false
+noClasses = false

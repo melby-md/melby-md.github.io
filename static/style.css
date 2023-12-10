@@ -18,7 +18,6 @@ html {
 	font:100%/1.5 sans-serif;
 }
 
-
 h1, h2, h3 {
 	line-height: 1.1
 }
@@ -47,14 +46,6 @@ code, pre {
 
 pre {
 	overflow: auto;
-	padding: .5em;
-	border-radius: .4em;
-	border: 1px solid;
-}
-
-.noborder {
-	padding: 0;
-	border: none;
 }
 
 @media screen {
@@ -75,17 +66,27 @@ pre {
 		min-height: 100svh;
 	}
 
+	.links li {
+		margin-top: 8px;
+		margin-bottom: 8px;
+	}
+
 	.nav {
 		padding: .75em 0 .25em;
 	}
 
-	.links li {
-		margin: 8px;
+	.nav li {
+		margin-right: 16px;
 	}
 
 	footer {
 		margin-top: auto;
 		padding-bottom: 1.5em;
+	}
+
+	.highlight pre {
+		border-radius: .4em;
+		padding: .5em;
 	}
 }
 

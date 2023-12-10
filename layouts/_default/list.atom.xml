@@ -1,7 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <feed xmlns="http://www.w3.org/2005/Atom">
 <title>Pedro Debs's blog</title>
-<author><name>Pedro Debs</name></author>
+<author>
+<name>Pedro Debs</name>
+<email>pedrodebs1@gmail.com</email>
+</author>
+<rights> © 2023 Pedro Debs </rights>
 <link href="{{.Site.BaseURL}}atom.xml" rel="self"/>
 <link href="{{.Site.BaseURL}}"/>
 <id>{{.Site.BaseURL}}</id>
@@ -15,11 +19,11 @@
 {{- if isset .Params "description" }}
 <summary>{{.Description}}</summary>
 {{- end}}
-<content type="xhtml">
-<div xmlns="http://www.w3.org/1999/xhtml">
-{{.Content -}}
-</div>
+<content type="html">
+<![CDATA[{{ replaceRE `(</*?(span|div).*?>)|(\s?class=".*?")|(\s?data-lang=".*?")` "" .Content -}}]]>
 </content>
 </entry>
 {{- end}}
 </feed>
+
+
