@@ -21,7 +21,7 @@ the first checking the first nine digits agains the first checksum digit, and th
 second checking the 2nd to 9th digit and the first checksum digit against the
 second one. Each check goes like this:
 
- 1. The 1st digit is multiplied by 1, the 2nd by 2... So it goes until de 9th is multiplied by 9.
+ 1. The 1st digit is multiplied by 1, the 2nd by 2... So it goes until the 9th is multiplied by 9.
  2. The result of the multiplications are added and divided by 11, the checksum will be the rest of the division.
  3. If the rest is 10 consider it as 0, then check if it's the same as the checksum digit.
 
