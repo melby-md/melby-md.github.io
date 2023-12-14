@@ -1,7 +1,9 @@
 {{define "main"}}
 <article>
-<h1>{{.Title}}</h1>
-<p><time datetime="{{.Date.Format "2006-01-02"}}">{{.Date.Format "2006-01-02"}}</time></p>
+<h1 id="content">{{.Title}}</h1>
+<time datetime="{{.Date.Format "2006-01-02"}}">{{.Date.Format "2006-01-02"}}</time>
+<div itemprop="articleBody">
 {{.Content -}}
+</div>
 </article>
 {{end}}
