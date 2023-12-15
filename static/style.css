@@ -83,11 +83,6 @@ pre {
 		margin-top: auto;
 		padding-bottom: 1.5em;
 	}
-
-	.highlight pre {
-		border-radius: .4em;
-		padding: .5em;
-	}
 }
 
 @supports not (color-scheme: dark light) {
