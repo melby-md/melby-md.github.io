@@ -260,7 +260,7 @@ all implementations in a `#ifdef` soup.
 #  include <emmintrin.h>
 #endif
 
-int
+static int
 mod11(const char *s)
 {
 
@@ -293,7 +293,7 @@ mod11(const char *s)
     return (final != 10) * final == s[9] - '0';
 }
 
-int
+static int
 check_cpf(const char *s)
 {
     return mod11(s) && mod11(s+1);
@@ -344,6 +344,7 @@ main(void)
     volatile unsigned sink = r;
     (void)sink;
     printf("%.3f M-ops/s\n", n / 1e6 / (now() - start));
+    return 0;
 }
 
 #elif defined TEST
