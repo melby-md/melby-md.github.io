@@ -11,33 +11,33 @@
 {{- if isset .Params "description" }}
 <meta name="description" content="{{.Description}}"/>
 {{- end}}{{end}}
-<link rel="icon" type="image/svg+xml" href="/favicon.svg"/>
+<link rel="icon" type="image/svg+xml" href="/img/favicon.svg"/>
 <link rel="icon" type="image/x-icon" href="/favicon.ico"/>
-<link rel="stylesheet" href="/style.css"/>
+<link rel="stylesheet" href="/css/style.css"/>
 {{- if .Params.highlight}}
-<link rel="stylesheet" href="/syntax.css" media="screen"/>
+<link rel="stylesheet" href="/css/syntax.css" media="screen"/>
 {{- end}}
 <title>{{block "title" .}}{{.Title}}{{end}}</title>
 </head>
 <body>
 <header>
 <nav>
-<ul class="nav links">
-<li class="fa house"><a href="/">
+<ul class="nav">
+<li><a href="/">
 {{- if eq .Kind "home" -}}
 <strong>~debs</strong>
 {{- else -}}
 ~debs
 {{- end -}}
 </a></li>
-<li class="fa bars"><a href="/blog">
+<li><a href="/blog">
 {{- if eq .Section "blog" -}}
 <strong>blog</strong>
 {{- else -}}
 blog
 {{- end -}}
 </a></li>
-<li class="fa feed"><a href="/atom.xml">feed</a></li></ul>
+<li><a href="/atom.xml">atom feed</a></li>
 </nav>
 <hr/>
 </header>
@@ -45,11 +45,16 @@ blog
 {{- block "main" .}}{{end -}}
 </main>
 <footer>
-<p xmlns:cc="http://creativecommons.org/ns#">Copyright &copy; <time datetime="2023">2023</time>
+<hr/>
+<p xmlns:cc="http://creativecommons.org/ns#">Copyright &copy; <time datetime="2024">2024</time>
 <span property="cc:attributionName">Pedro Debs</span><br/>
-Except otherwise noted, all content on this website is licensed under
-<a href="http://creativecommons.org/licenses/by-sa/4.0/" rel="license">CC BY-SA 4.0</a>,
-and all code is licensed under the <a href="https://opensource.org/license/0bsd/" rel="license">0BSD License</a>.</p>
+Except otherwise noted, content is licensed under
+<a href="https://creativecommons.org/licenses/by-sa/4.0/" rel="license">CC BY-SA 4.0</a>,
+and code under the <a href="https://opensource.org/license/0bsd/" rel="license">0BSD License</a>.</p>
+<a href="https://creativecommons.org/licenses/by-sa/4.0/"><img src="/img/by-sa.png" alt="cc by-sa" width="88" height="31"/></a>
+<img src="/img/linuxnow.gif" alt="linux now" width="88" height="31"/>
+<a href="https://www.mozilla.org/firefox/new"><img src="/img/firefoxnow.png" alt="firefox now" width="88" height="31"/></a>
+<a href="https://neovim.io/"><img src="/img/written-in-vi.png" alt="written in the vi editor" width="88" height="31"/></a>
 </footer>
 </body>
 </html>

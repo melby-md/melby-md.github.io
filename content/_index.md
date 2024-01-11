@@ -3,15 +3,17 @@ title: "Pedro Debs"
 description: "Pedro Debs's personal website"
 ---
 
-Programmer and undergraduate computer science student based in Brazil,
-also known as "melby" or "melby md" on some sites.
+Hello! I am a programmer based in Brazil currently pursuing a degree in
+computer science, also known as "melby" or "melby md" on some sites. I am
+interested in FOSS software, \*NIX systems, embedded, and game/graphics
+programming, the source code of this website can be found
+[here](https://github.com/melby-md/melby-md.github.io). Disclaimer: no content
+here was created with the help of AIs.
 
-## Elsewhere on the web:
+## Elsewhere on the web
 
-<ul class="links">
-<li class="fa email"><a href="mailto:pedrodebs1@gmail.com">pedrodebs1@gmail.com</a></li>
-<li class="fa key"><a href="/publickey.txt">PGP Key</a></li>
-<li class="fa github"><a href="https://github.com/melby-md">GitHub</a></li>
-<li class="fa linkedin"><a href="https://linkedin.com/in/pedro-debs-8ab3a127a">LinkedIn (in portuguese)</a></li>
-</ul>
-
+* Email: <pedrodebs1@gmail.com>
+* PGP Key: [FFDCE279B0F31A34](/publickey.txt)
+* GitHub: [melby-md](https://github.com/melby-md)
+* LinkedIn: [Pedro Debs](https://linkedin.com/in/pedro-debs-8ab3a127a) (in portuguese)
+* Discord: `melby_.` or `melby#2332`
