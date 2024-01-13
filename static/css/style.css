@@ -9,7 +9,7 @@ h1, h2, h3 {
 	line-height: 1.1
 }
 
-.nav, .blog {
+.blog {
 	margin: 0;
 	padding: 0;
 }
@@ -23,7 +23,8 @@ h1, h2, h3 {
 }
 
 .nav {
-	padding: 1.25em 0 .75em;
+	margin: 0;
+	padding: 1.25em 0 .75em 0;
 }
 
 footer img, .nav li {
