@@ -3,6 +3,7 @@ html {
 	-webkit-text-size-adjust: none;
 	text-size-adjust: none;
 	font:100%/1.5 sans-serif;
+	overflow-y: scroll;
 }
 
 h1, h2, h3 {
@@ -48,26 +49,10 @@ pre {
 }
 
 @media screen {
-	html {
-		height: -webkit-fill-available;
-	}
-
 	body {
 		margin: auto;
 		max-width: 45em;
 		padding: 0 1em;
-
-		display: grid;
-		grid-template-rows: auto 1fr auto;
-		grid-template-columns: 100%;
-		min-height: 100vh;
-		min-height: -webkit-fill-available;
-		min-height: 100svh;
-	}
-
-	footer {
-		margin-top: auto;
-		padding-bottom: 1.5em;
 	}
 }
 
