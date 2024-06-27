@@ -82,7 +82,7 @@ int
 mod11(const char *s)
 {
     // load the string into a vector
-    __m128i r = _mm_loadu_si128((void *)s);
+    __m128i r = _mm_loadu_si128((const __m128i *)s);
 
     // convert ascii to decimal
     r = _mm_xor_si128(r, _mm_set1_epi8(0x30));
@@ -107,7 +107,7 @@ mod11(const char *s)
 Lets go line by line. First load the array into a integer vector:
 
 ``` c
-__m128i r = _mm_loadu_si128((void *)s);
+__m128i r = _mm_loadu_si128((const __m128i *)s);
 ```
 
 This will load memory out of bounds, but it will deal with it later. Then,
@@ -202,7 +202,7 @@ int
 mod11(const char *s)
 {
     // load the string into a vector
-    __m128i r = _mm_loadu_si128((void *)s);
+    __m128i r = _mm_loadu_si128((const __m128i *)s);
 
     // convert ascii to decimal
     r = _mm_xor_si128(r, _mm_set1_epi8(0x30));
@@ -266,7 +266,7 @@ mod11(const char *s)
 
 #ifdef __SSE2__
 
-    __m128i r = _mm_loadu_si128((void *)s);
+    __m128i r = _mm_loadu_si128((const __m128i *)s);
     r = _mm_xor_si128(r, _mm_set1_epi8(0x30));
 
 #ifdef __SSSE3__
