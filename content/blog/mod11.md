@@ -4,6 +4,8 @@ date: 2023-12-03
 highlight: true
 ---
 
+Updated on <time datetime="2025-01-17">2025-01-17</time>.
+
 I've recently read [a great article about optimizing the Luhn algorithm with SWAR and SIMD](https://nullprogram.com/blog/2022/04/30/),
 and I am a big fan of unecessary optimization, so I tried to optimize the mod 11
 checksum algorithm. This algorithm is most known for beign used in the [ISBN-10 checksum](https://en.wikipedia.org/wiki/ISBN#ISBN-10_check_digits),
@@ -51,23 +53,22 @@ This algorithm implemented in C (assuming you're feeding the function with
 strings with the right length and only containing digits):
 
 ``` c
-int
-mod11(const char *s)
+bool
+mod11(char *s)
 {
-    int final = 0;
-    for (int i = 0; i < 9; i++)
-        final += (s[i-1] - '0') * i;
+    int sum = 0;
+    for (int i = 1; i <= 9; i++)
+        sum += (s[i-1] & 0x0f) * i;
 
-    final %= 11;
+    sum %= 11;
 
-    //return (final == 10 ? 0 : final)  == s[9] - '0';
-    return (final != 10) * final == s[9] - '0';
+    return (sum == 10 ? 0 : sum) == (s[9] & 0x0f);
 }
 
-int
-check_cpf(const char *s)
+bool
+check_cpf(char *s)
 {
-    return mod11(s) && mod11(s+1);
+	return mod11(s) & mod11(s+1);
 }
 ```
 
@@ -78,29 +79,28 @@ function with SSE2 SIMD instructions:
 ``` c
 #include <emmintrin.h>
 
-int
-mod11(const char *s)
+bool
+mod11(char *s)
 {
-    // load the string into a vector
-    __m128i r = _mm_loadu_si128((const __m128i *)s);
+	// load the string into a vector
+	__m128i r = _mm_loadu_si128((const __m128i *)s);
 
-    // convert ascii to decimal
-    r = _mm_xor_si128(r, _mm_set1_epi8(0x30));
+	// convert ascii to decimal
+	r = _mm_and_si128(r, _mm_set1_epi8(0x0f));
 
-    // multipy the first 9 numbers by 1, 2, 3...
-    __m128i m = _mm_set_epi32(0, 0x00000900, 0x07080506, 0x03040102);
-    r = _mm_mullo_epi16(r, m);
-    r = _mm_srli_epi16(r, 8);
+	// multipy the first 9 numbers by 1, 2, 3..., and sum adjacent pairs
+	__m128i m = _mm_set_epi32(0, 0x00000900, 0x07080506, 0x03040102);
+	r = _mm_mullo_epi16(r, m);
+	r = _mm_srli_epi16(r, 8);
 
-    // sum the results into one int
-    r = _mm_sad_epu8(r, _mm_setzero_si128());
-    r = _mm_add_epi32(r, _mm_shuffle_epi32(r, 2));
-    int final = _mm_cvtsi128_si32(r);
+	// sum the results into one int
+	r = _mm_sad_epu8(r, _mm_setzero_si128());
+	r = _mm_add_epi32(r, _mm_shuffle_epi32(r, 2));
+	int sum = _mm_cvtsi128_si32(r);
 
-    final %= 11;
+	sum %= 11;
 
-    //return (final == 10 ? 0 : final)  == s[9] - '0';
-    return (final != 10) * final == s[9] - '0';
+	return (sum == 10 ? 0 : sum) == (s[9] & 0x0f);
 }
 ```
 
@@ -111,10 +111,10 @@ __m128i r = _mm_loadu_si128((const __m128i *)s);
 ```
 
 This will load memory out of bounds, but it will deal with it later. Then,
-convert the ASCII digits into its decimal values by XORing every byte with 0x30:
+convert the ASCII digits into its decimal values by zeoring the upper 4 bits:
 
 ``` c
-r = _mm_xor_si128(r, _mm_set1_epi8(0x30));
+r = _mm_and_si128(r, _mm_set1_epi8(0x0f));
 ```
 
 Then comes the tricky part, there is no straightfoward way to multiply 8 bit
@@ -198,28 +198,27 @@ the sum part stays the same:
 ``` c
 #include <tmmintrin.h>
 
-int
-mod11(const char *s)
+bool
+mod11_ssse3(char *s)
 {
-    // load the string into a vector
-    __m128i r = _mm_loadu_si128((const __m128i *)s);
+	// load the string into a vector
+	__m128i r = _mm_loadu_si128((const __m128i *)s);
 
-    // convert ascii to decimal
-    r = _mm_xor_si128(r, _mm_set1_epi8(0x30));
+	// convert ascii to decimal
+	r = _mm_and_si128(r, _mm_set1_epi8(0x0f));
 
-    // multipy the first 9 numbers by 1, 2, 3...
-    __m128i m = _mm_set_epi32(0, 0x00000009, 0x08070605, 0x04030201);
-    r = _mm_maddubs_epi16(r, m);
+	// multipy the first 9 numbers by 1, 2, 3..., and sum adjacent pairs
+	__m128i m = _mm_set_epi32(0, 0x00000009, 0x08070605, 0x04030201);
+	r = _mm_maddubs_epi16(r, m);
 
-    // sum the results into one int
-    r = _mm_sad_epu8(r, _mm_setzero_si128());
-    r = _mm_add_epi32(r, _mm_shuffle_epi32(r, 2));
-    int final = _mm_cvtsi128_si32(r);
+	// sum the results into one int
+	r = _mm_sad_epu8(r, _mm_setzero_si128());
+	r = _mm_add_epi32(r, _mm_shuffle_epi32(r, 2));
+	int sum = _mm_cvtsi128_si32(r);
 
-    final %= 11;
+	sum %= 11;
 
-    //return (final == 10 ? 0 : final)  == s[9] - '0';
-    return (final != 10) * final == s[9] - '0';
+	return (sum == 10 ? 0 : sum) == (s[9] & 0x0f);
 }
 ```
 
@@ -227,141 +226,175 @@ A little bit neater I think.
 
 ## Benchmark
 
-All the code was compiled with gcc 13.2.1 on linux with the `-O3` flag and ran
-on my notebook with an AMD Ryzen 5 5500U @ 4.0GHz.
-
-By using the `-march=native` flag, the compiler can optimize the code even further,
-but that depends on your processor model.
+All the code was compiled with gcc 13.2.1 with `-O3 -mssse3` flags and ran on my
+notebook with an AMD Ryzen 5 5500U @ 4.0GHz.
 
 Results ranked by speed:
 
- 1. SSE2 with `-march=native`: ~246 million checksums per second
- 2. SSSE3 with `-march=native`: ~242 million checksums per second.
- 3. SSSE3: ~239 million checksums per second.
- 4. SSE2: ~237 million checksums per second
- 5. Iterative: ~118 million checksums per second
+ 1. SSSE3: ~81 million checksums per second.
+ 2. SSE2: ~80 million checksums per second.
+ 3. Iterative: ~72 million checksums per second.
 
-Surprisingly enough, even though the SSSE3 version was faster than the SSE2
-one, the latter was faster when `-march=native` was enabled.
+Well... I was expecting more, but it is a speed up none the less.
 
-In the end, the vectorized implementations had a 100% or more speed improvement.
-
-If you know how to further optimize the code shown or use a different aproach
-(SWAR, other architeture, etc), let me know!
+If you know how to further optimize the code shown let me know!
 
 ## Full source code
 
 all implementations in a `#ifdef` soup.
 
 ``` c
+#include <stdbool.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <time.h>
+
 #ifdef __SSSE3__
 #  include <tmmintrin.h>
 #elif defined __SSE2__
 #  include <emmintrin.h>
 #endif
 
-static int
-mod11(const char *s)
+bool
+mod11_iterative(char *s)
 {
+    int sum = 0;
+    for (int i = 1; i <= 9; i++)
+        sum += (s[i-1] & 0x0f) * i;
+
+    sum %= 11;
+
+    return (sum == 10 ? 0 : sum) == (s[9] & 0x0f);
+}
+
+bool
+check_cpf_iterative(char *s)
+{
+	return mod11_iterative(s) & mod11_iterative(s+1);
+}
 
 #ifdef __SSE2__
+bool
+mod11_sse2(char *s)
+{
+	// load the string into a vector
+	__m128i r = _mm_loadu_si128((const __m128i *)s);
 
-    __m128i r = _mm_loadu_si128((const __m128i *)s);
-    r = _mm_xor_si128(r, _mm_set1_epi8(0x30));
+	// convert ascii to decimal
+	r = _mm_and_si128(r, _mm_set1_epi8(0x0f));
+
+	// multipy the first 9 numbers by 1, 2, 3..., and sum adjacent pairs
+	__m128i m = _mm_set_epi32(0, 0x00000900, 0x07080506, 0x03040102);
+	r = _mm_mullo_epi16(r, m);
+	r = _mm_srli_epi16(r, 8);
+
+	// sum the results into one int
+	r = _mm_sad_epu8(r, _mm_setzero_si128());
+	r = _mm_add_epi32(r, _mm_shuffle_epi32(r, 2));
+	int sum = _mm_cvtsi128_si32(r);
+
+	sum %= 11;
+
+	return (sum == 10 ? 0 : sum) == (s[9] & 0x0f);
+}
+
+bool
+check_cpf_sse2(char *s)
+{
+	return mod11_sse2(s) & mod11_sse2(s+1);
+}
+#endif
 
 #ifdef __SSSE3__
-    __m128i m = _mm_set_epi32(0, 0x00000009, 0x08070605, 0x04030201);
-    r = _mm_maddubs_epi16(r, m);
-#else
-    __m128i m = _mm_set_epi32(0, 0x00000900, 0x07080506, 0x03040102);
-    r = _mm_mullo_epi16(r, m);
-    r = _mm_srli_epi16(r, 8);
-#endif
-
-    r = _mm_sad_epu8(r, _mm_setzero_si128());
-    r = _mm_add_epi32(r, _mm_shuffle_epi32(r, 2));
-    int final = _mm_cvtsi128_si32(r);
-
-#else
-    int final = 0;
-    for (int i = 1; i <= 9; i++)
-        final += (s[i-1] - '0') * i;
-
-#endif
-    final %= 11;
-
-    return (final != 10) * final == s[9] - '0';
-}
-
-static int
-check_cpf(const char *s)
+bool
+mod11_ssse3(char *s)
 {
-    return mod11(s) && mod11(s+1);
+	// load the string into a vector
+	__m128i r = _mm_loadu_si128((const __m128i *)s);
+
+	// convert ascii to decimal
+	r = _mm_and_si128(r, _mm_set1_epi8(0x0f));
+
+	// multipy the first 9 numbers by 1, 2, 3..., and sum adjacent pairs
+	__m128i m = _mm_set_epi32(0, 0x00000009, 0x08070605, 0x04030201);
+	r = _mm_maddubs_epi16(r, m);
+
+	// sum the results into one int
+	r = _mm_sad_epu8(r, _mm_setzero_si128());
+	r = _mm_add_epi32(r, _mm_shuffle_epi32(r, 2));
+	int sum = _mm_cvtsi128_si32(r);
+
+	sum %= 11;
+
+	return (sum == 10 ? 0 : sum) == (s[9] & 0x0f);
 }
 
-#ifdef BENCH
-#include <stdio.h>
-#include <stdint.h>
+bool
+check_cpf_ssse3(char *s)
+{
+	return mod11_ssse3(s) & mod11_ssse3(s+1);
+}
+#endif
 
 #ifdef _WIN32
+#define WIN32_LEAN_AND_MEAN
 #include <windows.h>
-static double
+
+double
 now(void)
 {
-    LARGE_INTEGER f, t;
-    QueryPerformanceFrequency(&f);
-    QueryPerformanceCounter(&t);
-    return (double)t.QuadPart / f.QuadPart;
+	LARGE_INTEGER f, t;
+	QueryPerformanceFrequency(&f);
+	QueryPerformanceCounter(&t);
+	return (double)t.QuadPart / f.QuadPart;
 }
-
 #else
-#include <time.h>
-static double
+double
 now(void)
 {
-    struct timespec ts;
-    clock_gettime(CLOCK_MONOTONIC, &ts);
-    return ts.tv_sec + ts.tv_nsec/1e9;
+	struct timespec ts;
+	clock_gettime(CLOCK_MONOTONIC, &ts);
+	return ts.tv_sec + ts.tv_nsec/1e9;
 }
 #endif
 
 int
 main(void)
 {
-    static const char cpfs[][11] = {
-        "51386130222", "54535728097",
-        "36709354105", "31797721232",
-    };
+	char cpfs[][12] = {
+		"84490986025", "11111111111",
+		"82269940040", "12312312312",
+		"23799146059", "00000000000",
+		"05321024014", "42424242424",
+	};
+	long n = 1L << 28;
+	volatile unsigned sink = 0;
+	double start;
 
-    long n = 1L << 28;
-    double start = now();
-    unsigned r = 1;
-    for (long i = 0; i < n; i++) {
-        uint32_t n = i;
-        r += check_cpf(cpfs[(n*0x1c5bf891U)>>30]);  // random draw
-    }
+	srand(time(NULL));
 
-    volatile unsigned sink = r;
-    (void)sink;
-    printf("%.3f M-ops/s\n", n / 1e6 / (now() - start));
-    return 0;
-}
+	start = now();
+	for (long i = 0; i < n; i++)
+		sink += check_cpf_iterative(cpfs[rand() & 7]);
+	printf("Iterative: %.3f M-ops/s\n", n / 1e6 / (now() - start));
 
-#elif defined TEST
-#include <stdio.h>
-#include <assert.h>
-
-int
-main(void)
-{
-    assert(check_cpf("51386130222"));
-    assert(check_cpf("36709354105"));
-    assert(check_cpf("38104725168") == 0);
-    assert(check_cpf("56709354105") == 0);
-    printf("working!\n");
-    return 0;
-}
-
+#ifdef __SSE2__
+	start = now();
+	for (long i = 0; i < n; i++)
+		sink += check_cpf_sse2(cpfs[rand() & 7]);
+	printf("SSE2: %.3f M-ops/s\n", n / 1e6 / (now() - start));
 #endif
+
+#ifdef __SSSE3__
+	start = now();
+	for (long i = 0; i < n; i++)
+		sink += check_cpf_ssse3(cpfs[rand() & 7]);
+	printf("SSSE3: %.3f M-ops/s\n", n / 1e6 / (now() - start));
+#endif
+
+	(void)sink;
+
+	return 0;
+}
 ```
 
