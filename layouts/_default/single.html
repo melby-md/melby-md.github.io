@@ -1,7 +1,10 @@
 {{define "main"}}
 <article>
 <h1 id="h1">{{.Title}}</h1>
-<time datetime="{{.Date.Format "2006-01-02"}}">{{.Date.Format "2006-01-02"}}</time>
+<p><time datetime="{{.Date.Format "2006-01-02"}}">{{.Date.Format "2006-01-02"}}</time></p>
+{{ if ne .Lastmod .Date -}}
+<p>Updated on <time datetime="{{.Lastmod.Format "2006-01-02"}}">{{.Lastmod.Format "2006-01-02"}}</time></p>
+{{- end }}
 <div>
 {{.Content -}}
 </div>

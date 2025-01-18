@@ -5,11 +5,11 @@
 <name>Pedro Debs</name>
 <email>pedrodebs1@gmail.com</email>
 </author>
-<rights> © 2023 Pedro Debs </rights>
+<rights> © 2025 Pedro Debs </rights>
 <link href="{{.Site.BaseURL}}atom.xml" rel="self"/>
 <link href="{{.Site.BaseURL}}"/>
 <id>{{.Site.BaseURL}}</id>
-<updated>{{ site.LastChange.UTC.Format "2006-01-02T15:04:05-07:00" | safeHTML }}</updated>
+<updated>{{ .Site.Lastmod.UTC.Format "2006-01-02T15:04:05-07:00" | safeHTML }}</updated>
 {{- range first 5 .Pages}}
 <entry>
 <title>{{.Title}}</title>

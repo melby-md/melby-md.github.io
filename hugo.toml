@@ -19,8 +19,8 @@ mediaType = "application/xml"
 path = "../"
 
 [outputs]
-home = ['html']
-section = ['html', 'atom']
+home = ["html"]
+section = ["html", "atom"]
 
 [markup.highlight]
 noClasses = false

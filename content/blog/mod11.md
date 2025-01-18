@@ -1,10 +1,8 @@
 ---
 title: "Optimizing mod11 checksum verification with SIMD"
 date: 2023-12-03
-highlight: true
+lastmod: 2025-01-17
 ---
-
-Updated on <time datetime="2025-01-17">2025-01-17</time>.
 
 I've recently read [a great article about optimizing the Luhn algorithm with SWAR and SIMD](https://nullprogram.com/blog/2022/04/30/),
 and I am a big fan of unecessary optimization, so I tried to optimize the mod 11
@@ -50,9 +48,10 @@ x x  x  x  x  x  x x x
 197 mod 11 = 10 (second checksum checks out because 10 becomes 0)
 
 This algorithm implemented in C (assuming you're feeding the function with
-strings with the right length and only containing digits):
+ascii strings with 11 digits):
 
 ``` c
+struct test;
 bool
 mod11(char *s)
 {
@@ -63,6 +62,7 @@ mod11(char *s)
     sum %= 11;
 
     return (sum == 10 ? 0 : sum) == (s[9] & 0x0f);
+    return false;
 }
 
 bool
@@ -250,9 +250,9 @@ all implementations in a `#ifdef` soup.
 #include <time.h>
 
 #ifdef __SSSE3__
-#  include <tmmintrin.h>
+#include <tmmintrin.h>
 #elif defined __SSE2__
-#  include <emmintrin.h>
+#include <emmintrin.h>
 #endif
 
 bool
