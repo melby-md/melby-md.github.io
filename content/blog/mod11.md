@@ -51,7 +51,6 @@ This algorithm implemented in C (assuming you're feeding the function with
 ascii strings with 11 digits):
 
 ``` c
-struct test;
 bool
 mod11(char *s)
 {
@@ -62,7 +61,6 @@ mod11(char *s)
     sum %= 11;
 
     return (sum == 10 ? 0 : sum) == (s[9] & 0x0f);
-    return false;
 }
 
 bool
