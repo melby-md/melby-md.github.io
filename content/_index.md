@@ -2,10 +2,9 @@
 title: "Pedro Debs"
 ---
 
-Hello! I am a programmer based in Brazil, I sometimes use the handle "melby" or
-"melby md". I am interested in FOSS software, embedded, and game/graphics
-programming, but web design is my passion, I also like electronics, math and
-trains. The source code of this website can be found here:
+I'm a programmer based in Brazil, I sometimes use the handle "melby" or
+"melby md". Interested in game/graphics programming, but web design is my
+passion. The source code of this website can be found here:
 <https://github.com/melby-md/melby-md.github.io>. Disclaimer: no content here
 was created with the help of AIs.
 
